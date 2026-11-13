@@ -32,7 +32,7 @@ const NODES = [
 const EDGES = [
   {id:"e-deleg", from:"orgU", to:"user", label:"delegation", bend:-14, std:["delegated-authority","oidc"],
    desc:"The organisation vouches for the user's role and entitlements, for example an employee acting within their job function."},
-  {id:"e-authn", from:"taU", to:"user", label:"authentication", bend:14, std:["oidc","passkeys","oauth2"],
+  {id:"e-authn", from:"taU", to:"user", label:"authentication", bend:14, std:["oidc","passkeys"],
    desc:"The IdP authenticates the user and issues identity assertions others can rely on."},
   {id:"e-taU-org", from:"taU", to:"orgU", label:"endorses", bend:0, std:["oidfed","trust-marks"],
    desc:"The trust anchor stands behind the organisation, so relying parties can trust the identities it issues."},
@@ -68,7 +68,7 @@ const LAYERS = [
   {id:"discovery", name:"Discovery, metadata & policy", cells:{user:[], resource:["prm","as-meta","poppy-json"], agent:["cimd","dcr","oidfed","a2a-card"], org:["entity-stmt"], ta:["entity-stmt"]}},
   {id:"ident", name:"Identification", note:"external", cells:{user:["jwt-sub"], resource:["uri"], agent:["spiffe-id","wimse-id","did","client-id","client-instance-id"], org:["lei","entity-id"], ta:["entity-id"]}},
   {id:"creds", name:"Credentials", note:"issuance & provisioning", cells:{user:["access-token","refresh-token","passkeys"], resource:[], agent:["wit","wic","x509-svid","jwt-svid","x509","mission-mandate"], org:["x509","pkjwt"], ta:["x509","oidfed"]}},
-  {id:"authn", name:"Authentication", cells:{user:["oauth2","oidc","pkce","device-grant","passkeys"], resource:["mtls","tls"], agent:["mtls","wpt","httpsig","pkjwt","spiffe-client-auth"], org:[], ta:["oidfed"]}},
+  {id:"authn", name:"Authentication", cells:{user:["oidc","pkce","device-grant","passkeys"], resource:["mtls","tls"], agent:["mtls","wpt","httpsig","pkjwt","spiffe-client-auth"], org:[], ta:["oidfed"]}},
   {id:"authz", name:"Authorisation & delegation", cells:{user:["oauth2","par","rar","grant-mgmt","ciba","mission-shaping","mission-approval","mission-consent"], resource:["authzen","introspection","jwt-at","mission-resource-access","mission-runtime","mission-authzen"], agent:["oauth2","dpop","txn-tokens","id-jag","identity-chaining","token-exchange","mission-oauth","mission-child","actor-profile"], org:["delegated-authority","mission-mas"], ta:["trust-marks","id-assertion-framework","mission-cross-domain"]}},
   {id:"protocols", name:"Protocols", cells:{user:["oauth2","oidc","passkeys"], resource:["mcp","a2a","openapi"], agent:["oauth2"], org:[], ta:["oidfed","etsi-tl"]}},
   {id:"domain", name:"Domain extensions", cells:{user:[], resource:["x402"], agent:[], org:[], ta:[]}}
