@@ -41,7 +41,9 @@ Object.entries(PROFILES || {}).forEach(([pid, P]) => {
 });
 Object.entries(STD).forEach(([id, s]) => {
   if (!s.n || !s.d) errors.push(`Standard "${id}": needs n (name) and d (description)`);
+  if (!s.gives) errors.push(`Standard "${id}": needs gives (one line on what it delivers, shown on hover)`);
   if (!s.concept && !s.u) errors.push(`Standard "${id}": needs u (URL) unless concept: true`);
+  if (s.u && !/^https:\/\//.test(s.u)) errors.push(`Standard "${id}": u must be an https URL`);
   if (s.track && !["wg","indiv"].includes(s.track)) errors.push(`Standard "${id}": track must be "wg" or "indiv"`);
   if (s.track && s.rfc) errors.push(`Standard "${id}": has both rfc and track; drop track once published`);
 });

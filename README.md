@@ -23,7 +23,7 @@ All content is in [`data.js`](data.js). You should rarely need to touch `index.h
 | `LAYERS` | Matrix rows; `cells` maps each column kind to a list of standard ids. `[]` renders as a gap |
 | `COMPLIANCE` | The ecosystem-wide bottom row |
 | `PROFILES` | Named subsets of standards (e.g. AIMS, Poppy): `name`, `full`, `by`, `u`, `summary`, `open` (gaps it leaves), `std` (ids) |
-| `STD` | Standards dictionary: `n` name, `d` description, `u` URL, `rfc` RFC number if published, or `track` (`"wg"` / `"indiv"`) for Internet-Drafts (shown as a badge on the chip); `concept: true` for non-spec entries (shown dashed, no URL needed) |
+| `STD` | Standards dictionary: `n` name, `gives` one line on what it delivers to the stack (shown on hover), `d` description, `u` URL, `rfc` RFC number if published, or `track` (`"wg"` / `"indiv"`) for Internet-Drafts (shown as a badge on the chip); `concept: true` for non-spec entries (shown dashed, no URL needed) |
 
 ### Common changes
 
