@@ -395,7 +395,7 @@ function stdCard(id) {
   LAYERS.forEach(L => COLS.forEach(c => { if (L.cells[c].includes(id)) where.push(`${KINDS[c].name} · ${L.name}`); }));
   if (COMPLIANCE.std.includes(id)) where.push(COMPLIANCE.name);
   const profs = Object.values(PROFILES).filter(P => P.std.includes(id)).map(P => P.name);
-  return `<div class="t-k">${s.concept ? "Concept" : "Delivers to the stack"}</div>
+  return `${s.concept ? `<div class="t-k">Concept</div>` : ""}
     <div class="t-h">${s.n}${badge(s) ? `<span class="t-b">${badge(s)}</span>` : ""}</div>
     <div class="t-g">${s.gives || firstSentence(s.d)}</div>
     ${where.length ? `<div class="t-m">Sits in: ${where.slice(0,3).join("; ")}${where.length > 3 ? ` +${where.length-3} more` : ""}</div>` : ""}
