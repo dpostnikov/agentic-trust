@@ -1,14 +1,31 @@
 # Agentic Trust Standards Map
 
-An interactive map of trust relationships in agentic systems (user, resource, agent/workload, organisations, trust anchors) cross-linked to the standards that cover each layer: discovery, identification, credentials, authentication, authorisation and delegation, protocols, and domain extensions.
+An interactive map of trust relationships in agentic systems. It covers the user, resource, agent/workload, organisations and trust anchors, and cross-links each to the standards for every layer: discovery, identification, credentials, authentication, authorisation and delegation, protocols, domain extensions, and compliance.
 
-Click an entity, a relationship or a standard and the diagram, inspector panel and matrix highlight what's connected.
+**Live site:** https://dpostnikov.github.io/agentic-trust/
+
+## What's on the page
+
+- **Trust diagram.** Shows who owns, operates, authorises, endorses and accesses what. A toggle shows *suggested* relationships (dashed). These are the "on behalf of user" chain and each trust anchor federating to the ecosystem anchor.
+- **Inspector.** Click any box, arrow, column heading or standard to see what it is, how it relates, and which standards apply.
+- **Standards by layer.** A matrix with entities as columns and layers as rows. Hatched cells are gaps with no standard mapped. Dashed chips are concepts rather than specs.
+- **Maturity badges.** Every chip shows the RFC number if published, otherwise **WG draft** (working-group Internet-Draft) or ***Indiv. draft*** (individual Internet-Draft).
+- **Hover cards.** Hover or tab to any block to see what it delivers to the stack. Each standard's card also shows where it sits, which profiles use it, and a clickable link to its spec.
+- **Profiles.** A switch above the matrix highlights the standards a given specification uses, with a short summary and what it leaves open. It filters the matrix only; the diagram and inspector are unaffected.
+
+### Profiles
+
+| Profile | Link | Source |
+|---|---|---|
+| AIMS (Agent Identity Management System) | `#aims` | [draft-ietf-wimse-aims](https://datatracker.ietf.org/doc/draft-ietf-wimse-aims/) |
+| Mission-Bound Authorization | `#mission` | Karl McGuinness's individual drafts: [handbook](https://notes.karlmcguinness.com/mission-handbook/), [drafts](https://github.com/mcguinness/mission-bound-authorization). The 16 key drafts of 52 are shown. |
+| Poppy (Personal Agent Protocol) | `#poppy` | Sierra and Meta draft: [personalagentprotocol.org](https://personalagentprotocol.org/) |
+
+Add the link to the site URL to open a profile directly, e.g. https://dpostnikov.github.io/agentic-trust/#mission.
 
 ## Run it
 
 Open `index.html` in a browser. There is no build step and no server needed.
-
-Every push to `main` is validated and published to GitHub Pages (see `.github/workflows/pages.yml`). To turn Pages on: **Settings → Pages → Source: GitHub Actions**.
 
 ## Edit the content
 
@@ -22,26 +39,28 @@ All content is in [`data.js`](data.js). You should rarely need to touch `index.h
 | `EDGES` | Arrows: `from`, `to`, `label`, `desc`, `std` (standard ids), optional `bend` (curve, px) and `suggested: true` (dashed, toggleable) |
 | `LAYERS` | Matrix rows; `cells` maps each column kind to a list of standard ids. `[]` renders as a gap |
 | `COMPLIANCE` | The ecosystem-wide bottom row |
-| `PROFILES` | Named subsets of standards (e.g. AIMS, Poppy): `name`, `full`, `by`, `u`, `summary`, `open` (gaps it leaves), `std` (ids) |
-| `STD` | Standards dictionary: `n` name, `gives` one line on what it delivers to the stack (shown on hover), `d` description, `u` URL, `rfc` RFC number if published, or `track` (`"wg"` / `"indiv"`) for Internet-Drafts (shown as a badge on the chip); `concept: true` for non-spec entries (shown dashed, no URL needed) |
+| `PROFILES` | Named subsets of standards: `name`, `full`, `by`, `u`, `summary`, `open` (gaps it leaves), `std` (ids) |
+| `STD` | The standards dictionary (fields below) |
+
+`STD` entry fields:
+
+| Field | Required | Meaning |
+|---|---|---|
+| `n` | yes | Name |
+| `gives` | yes | One line on what it delivers to the stack. Shown on hover |
+| `d` | yes | Longer description, shown in the inspector |
+| `u` | yes, unless `concept` | `https` link to the spec itself, not a working-group home page |
+| `rfc` | if published | RFC number, shown as a badge |
+| `track` | for Internet-Drafts | `"wg"` or `"indiv"`. Remove it when the draft becomes an RFC |
+| `concept` | optional | `true` for ideas with no spec yet (shown dashed) |
 
 ### Common changes
 
-**Add a standard**: add an entry to `STD`, then reference its id in a `LAYERS[].cells` list and/or an edge's `std` list.
-
-**Add a relationship**: add an entry to `EDGES` with existing node ids. Use `bend` to curve it away from other arrows.
-
-**Add an entity box**: add to `NODES` with a free spot on the canvas.
-
-**Add a profile**: add an entry to `PROFILES`. Profiles filter only the standards-by-layer matrix; the diagram and inspector are unaffected. Every id in its `std` list must be placed somewhere in the matrix. Link straight to a profile with `#<profile-id>`, e.g. `index.html#aims`.
-
-### Profiles
-
-| Profile | Source |
-|---|---|
-| AIMS (Agent Identity Management System) | [draft-ietf-wimse-aims](https://datatracker.ietf.org/doc/draft-ietf-wimse-aims/) |
-| Mission-Bound Authorization | Karl McGuinness's draft family: [handbook](https://notes.karlmcguinness.com/mission-handbook/), [drafts](https://github.com/mcguinness/mission-bound-authorization) |
-| Poppy (Personal Agent Protocol) | Sierra and Meta draft: [personalagentprotocol.org](https://personalagentprotocol.org/) |
+- **Add a standard.** Add an entry to `STD`, then reference its id in a `LAYERS[].cells` list and/or an edge's `std` list.
+- **A draft becomes an RFC.** Replace `track` with `rfc: <number>` and point `u` at rfc-editor.org.
+- **Add a relationship.** Add an entry to `EDGES` with existing node ids. Use `bend` to curve it away from other arrows.
+- **Add an entity box.** Add to `NODES` with a free spot on the canvas.
+- **Add a profile.** Add an entry to `PROFILES`. Every id in its `std` list must be placed somewhere in the matrix.
 
 ### Check your edit
 
@@ -49,8 +68,32 @@ All content is in [`data.js`](data.js). You should rarely need to touch `index.h
 node scripts/validate.mjs
 ```
 
-This catches unknown standard ids, missing cells, broken node references and duplicates. It also runs on every pull request.
+The validator fails on:
+- unknown or duplicate ids, and broken node references
+- missing matrix cells (use `[]` for a gap)
+- a standard without `n`, `d`, `gives`, or an `https` URL
+- a `track` value other than `wg` or `indiv`, or a standard with both `rfc` and `track`
+- a profile that lists a standard not placed in the matrix
+
+It warns about standards that are defined but not used anywhere.
+
+## Publishing
+
+`.github/workflows/pages.yml` runs the validator on every pull request and push. Pushes to `main` are also deployed to GitHub Pages.
+
+- **Turn Pages on** under **Settings → Pages → Source: GitHub Actions**.
+- **Pages needs a public repo** on GitHub's free plan. Making the repo private turns Pages off, and switching back to public doesn't turn it on again. Re-select the source, then run the workflow from the Actions tab.
+- **Caching.** The deploy step loads `data.js?v=<commit>`, so browsers never pair a new page with a cached old data file.
+
+## Changes
+
+- **Hover cards:** each standard has a `gives` line and a clickable spec link; spec links point to the spec itself.
+- **Maturity badges:** RFC numbers, plus WG and individual draft markers.
+- **Profiles:** AIMS, Poppy and Mission-Bound Authorization, filtering the standards matrix only.
+- **Content fixes:** OAuth removed from user authentication, since it's authorisation, not authentication; Poppy linked to its own draft.
+- **Deploy:** cache-busting so the page and its data always match.
+- **Rename:** the project is now the Agentic Trust Standards Map.
 
 ## Status
 
-The initial matrix was transcribed from a low-resolution diagram. Some spec names and placements are best-effort and need review.
+The first version of the matrix was transcribed from a low-resolution diagram, so some placements are best-effort and need review. Individual drafts, including the Mission-Bound family, have not had working-group review.
