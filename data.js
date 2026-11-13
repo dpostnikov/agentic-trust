@@ -46,11 +46,11 @@ const EDGES = [
    desc:"A trust anchor certifies the resource endpoint (TLS certificate, federation entity statement)."},
   {id:"e-taR-org", from:"taR", to:"orgR", label:"endorses", bend:0, std:["oidfed","lei"],
    desc:"The trust anchor vouches for the resource owner's organisational identity."},
-  {id:"e-authorises", from:"user", to:"agent", label:"authorises", bend:16, std:["oauth2","ciba","grant-mgmt","token-exchange","par","rar","mission-shaping","mission-approval","mission-consent","mission-oauth"],
+  {id:"e-authorises", from:"user", to:"agent", label:"authorises", bend:16, std:["oauth2","ciba","grant-mgmt","token-exchange","par","rar","mission-shaping","mission-approval","mission-consent","mission-oauth","aauth"],
    desc:"The user grants the agent scoped authority. FAPI-CIBA covers approvals the agent requests asynchronously; grant management lets the user review and revoke them."},
-  {id:"e-accesses", from:"agent", to:"resource", label:"accesses", bend:22, std:["mtls","wpt","httpsig","authzen","mcp","a2a","mission-runtime","mission-authzen","mission-resource-access"],
+  {id:"e-accesses", from:"agent", to:"resource", label:"accesses", bend:22, std:["mtls","wpt","httpsig","authzen","mcp","a2a","mission-runtime","mission-authzen","mission-resource-access","aauth","sig-key","aauth-r3"],
    desc:"The agent calls the resource, proving its own identity per request, and the resource makes an authorisation decision."},
-  {id:"e-operates", from:"orgA", to:"agent", label:"owns / operates", bend:-16, std:["spiffe-id","x509-svid","wit","cimd","client-instance-id"],
+  {id:"e-operates", from:"orgA", to:"agent", label:"owns / operates", bend:-16, std:["spiffe-id","x509-svid","wit","cimd","client-instance-id","aauth-bootstrap"],
    desc:"The operating organisation issues the agent its workload identity and is accountable for its behaviour."},
   {id:"e-taA-agent", from:"taA", to:"agent", label:"endorses", bend:16, std:["oidfed","trust-marks","a2a-card"],
    desc:"A trust anchor attests to the agent: its metadata, its operator, possibly its certification (trust marks)."},
@@ -67,15 +67,15 @@ const EDGES = [
 ];
 
 const LAYERS = [
-  {id:"discovery", name:"Discovery, metadata & policy", cells:{user:[], resource:["prm","as-meta","poppy-json"], agent:["cimd","dcr","oidfed","a2a-card"], org:["entity-stmt"], ta:["entity-stmt"]}},
-  {id:"ident", name:"Identification", note:"external", cells:{user:["jwt-sub"], resource:["uri"], agent:["spiffe-id","wimse-id","did","client-id","client-instance-id"], org:["lei","entity-id"], ta:["entity-id"]}},
-  {id:"creds", name:"Credentials", note:"issuance & provisioning", cells:{user:["access-token","refresh-token","passkeys"], resource:[], agent:["wit","wic","x509-svid","jwt-svid","x509","mission-mandate"], org:["x509","pkjwt"], ta:["x509","oidfed"]}},
-  {id:"authn", name:"Authentication", cells:{user:["oidc","pkce","device-grant","passkeys"], resource:["mtls","tls"], agent:["mtls","wpt","httpsig","pkjwt","spiffe-client-auth"], org:[], ta:["oidfed"]}},
-  {id:"authz", name:"Authorisation & delegation", cells:{user:["oauth2","par","rar","grant-mgmt","ciba","mission-shaping","mission-approval","mission-consent"], resource:["authzen","introspection","jwt-at","mission-resource-access","mission-runtime","mission-authzen"], agent:["oauth2","dpop","txn-tokens","id-jag","identity-chaining","token-exchange","mission-oauth","mission-child","actor-profile"], org:["delegated-authority","mission-mas"], ta:["trust-marks","id-assertion-framework","mission-cross-domain"]}},
-  {id:"protocols", name:"Protocols", cells:{user:["oauth2","oidc","passkeys"], resource:["mcp","a2a","openapi"], agent:["oauth2"], org:[], ta:["oidfed","etsi-tl"]}},
-  {id:"domain", name:"Domain extensions", cells:{user:[], resource:["x402"], agent:[], org:[], ta:[]}}
+  {id:"discovery", name:"Discovery, metadata & policy", cells:{user:[], resource:["prm","as-meta","poppy-json","well-known"], agent:["cimd","dcr","oidfed","a2a-card","well-known"], org:["entity-stmt"], ta:["entity-stmt"]}},
+  {id:"ident", name:"Identification", note:"external", cells:{user:["jwt-sub"], resource:["uri"], agent:["spiffe-id","wimse-id","did","client-id","client-instance-id","aauth"], org:["lei","entity-id"], ta:["entity-id"]}},
+  {id:"creds", name:"Credentials", note:"issuance & provisioning", cells:{user:["access-token","refresh-token","passkeys"], resource:[], agent:["wit","wic","x509-svid","jwt-svid","x509","mission-mandate","aauth-bootstrap","jwk-thumbprint","cnf"], org:["x509","pkjwt"], ta:["x509","oidfed"]}},
+  {id:"authn", name:"Authentication", cells:{user:["oidc","pkce","device-grant","passkeys"], resource:["mtls","tls"], agent:["mtls","wpt","httpsig","pkjwt","spiffe-client-auth","sig-key"], org:[], ta:["oidfed"]}},
+  {id:"authz", name:"Authorisation & delegation", cells:{user:["oauth2","par","rar","grant-mgmt","ciba","mission-shaping","mission-approval","mission-consent","aauth"], resource:["authzen","introspection","jwt-at","mission-resource-access","mission-runtime","mission-authzen","aauth-r3"], agent:["oauth2","dpop","txn-tokens","id-jag","identity-chaining","token-exchange","mission-oauth","mission-child","actor-profile"], org:["delegated-authority","mission-mas"], ta:["trust-marks","id-assertion-framework","mission-cross-domain"]}},
+  {id:"protocols", name:"Protocols", cells:{user:["oauth2","oidc","passkeys"], resource:["mcp","a2a","openapi"], agent:["oauth2","aauth"], org:[], ta:["oidfed","etsi-tl"]}},
+  {id:"domain", name:"Domain extensions", cells:{user:[], resource:["x402","http-payment"], agent:[], org:[], ta:[]}}
 ];
-const COMPLIANCE = {name:"Compliance & governance", std:["ssf","caep","risc","wise","oauth-bcp","fapi2","status-list","mission-status","mission-signals","mission-status-list","mission-containment","mission-audit"]};
+const COMPLIANCE = {name:"Compliance & governance", std:["ssf","caep","risc","wise","oauth-bcp","fapi2","status-list","mission-status","mission-signals","mission-status-list","mission-containment","mission-audit","aauth-events"]};
 
 /* Profiles: named subsets of STD, selectable above the map (also via #aims / #poppy in the URL) */
 const PROFILES = {
@@ -103,6 +103,13 @@ const PROFILES = {
     std:["oauth2","par","rar","pkce","dpop","token-exchange","introspection","jwt-at","as-meta","prm","uri","mtls","oauth-bcp","oidc","device-grant","authzen","id-jag","ssf","status-list",
          "mission-oauth","mission-shaping","mission-approval","mission-consent","mission-resource-access","mission-runtime","mission-authzen","mission-child","mission-cross-domain","mission-mas","mission-mandate",
          "mission-status","mission-signals","mission-status-list","mission-containment","mission-audit","actor-profile","client-instance-id","id-assertion-framework"]
+  },
+  aauth: {
+    name:"AAuth", full:"Agent Auth Protocol", by:"Dick Hardt (individual draft)",
+    u:"https://datatracker.ietf.org/doc/draft-hardt-oauth-aauth-protocol/",
+    summary:"A new protocol rather than an OAuth extension. Each agent has its own key-bound identity (aauth:local@domain) issued by an Agent Provider, and signs every request with HTTP Message Signatures, so there is no client registration and no shared secret. Resources issue resource tokens describing the access they need; the user's chosen Person Server (consent, identity, missions) or the resource's Access Server answers with an auth token. Four access modes, from identity-only to federated across organisations. Existing OAuth deployments are wrapped rather than replaced.",
+    open:["Individual draft, single author, no working group; ten revisions since April 2026","Deliberately not an OAuth extension, so it doesn't reuse OAuth client registration or grants","Payments delegated to x402 and the HTTP Payment scheme draft","Companion drafts (bootstrap, events, resource vocabularies) are early"],
+    std:["aauth","sig-key","aauth-bootstrap","aauth-events","aauth-r3","httpsig","jwk-thumbprint","cnf","jwt-sub","jwt-at","well-known","as-meta","token-exchange","oauth2","oidc","tls","x402","http-payment"]
   }
 };
 
@@ -185,5 +192,14 @@ const STD = {
   "mission-audit":{track:"indiv", n:"Mission Audit Transparency", gives:"A tamper-evident, append-only record of approvals and agent actions", d:"Makes Mission evidence records tamper-evident, append-only and independently verifiable.", u:"https://github.com/mcguinness/mission-bound-authorization/blob/main/draft-mcguinness-mission-audit.md"},
   "actor-profile":{track:"indiv", n:"OAuth Actor Profile for Delegation", gives:"Consistent 'who acted for whom' chains across every OAuth token type", d:"Consistent rules for the act claim across assertion grants, token exchange and JWT access tokens, so delegation chains read the same everywhere.", u:"https://datatracker.ietf.org/doc/draft-mcguinness-oauth-actor-profile/"},
   "client-instance-id":{track:"indiv", n:"Client Instance Identification", gives:"Telling individual running copies of the same client apart", d:"Identifies individual instances of one OAuth client, building on attestation-based client authentication.", u:"https://datatracker.ietf.org/doc/draft-mcguinness-oauth-client-instance-id/"},
-  "id-assertion-framework":{track:"indiv", n:"Identity Assertion Trust Framework", gives:"A published list of which identity issuers a domain accepts for cross-domain grants", d:"How a resource's authorization server publishes which assertion issuers it trusts, for ID-JAG and similar cross-domain grants.", u:"https://datatracker.ietf.org/doc/draft-mcguinness-oauth-id-assertion-framework/"}
+  "id-assertion-framework":{track:"indiv", n:"Identity Assertion Trust Framework", gives:"A published list of which identity issuers a domain accepts for cross-domain grants", d:"How a resource's authorization server publishes which assertion issuers it trusts, for ID-JAG and similar cross-domain grants.", u:"https://datatracker.ietf.org/doc/draft-mcguinness-oauth-id-assertion-framework/"},
+  "aauth":{track:"indiv", n:"AAuth Protocol", gives:"Agents with their own key-bound identity that sign every request, plus person-chosen consent and missions, without OAuth client registration", d:"Agent authorization protocol in which each agent has a cryptographic identity (aauth:local@domain) issued by an Agent Provider, signs requests with HTTP Message Signatures, and obtains auth tokens from the user's Person Server or a resource's Access Server in response to resource tokens.", u:"https://datatracker.ietf.org/doc/draft-hardt-oauth-aauth-protocol/"},
+  "sig-key":{track:"indiv", n:"HTTP Signature Keys", gives:"A header telling the receiver which key (and where to find it) verifies a signed HTTP request", d:"Defines the Signature-Key header, which carries or points to the key used for an HTTP Message Signature, so a receiver can verify an agent it has never met.", u:"https://datatracker.ietf.org/doc/draft-hardt-httpbis-signature-key/"},
+  "aauth-bootstrap":{track:"indiv", n:"AAuth Bootstrap", gives:"How an agent gets its first agent token from its Agent Provider", d:"Guidance for an agent acquiring its initial AAuth agent token and key binding.", u:"https://datatracker.ietf.org/doc/draft-hardt-aauth-bootstrap/"},
+  "aauth-events":{track:"indiv", n:"AAuth Events", gives:"Event delivery between AAuth parties, e.g. for revocation and mission changes", d:"Defines how AAuth parties deliver events to each other.", u:"https://datatracker.ietf.org/doc/draft-hardt-aauth-events/"},
+  "aauth-r3":{track:"indiv", n:"AAuth Rich Resource Requests (R3)", gives:"Vocabularies for resources to describe the access an agent needs", d:"Resource vocabularies used in AAuth resource tokens to describe requested access in detail.", u:"https://datatracker.ietf.org/doc/draft-hardt-aauth-r3/"},
+  "jwk-thumbprint":{rfc:7638, n:"JWK Thumbprint", gives:"A stable hash that names a public key", d:"Computes a hash of a JSON Web Key, used to identify and bind keys in tokens.", u:"https://www.rfc-editor.org/rfc/rfc7638"},
+  "cnf":{rfc:7800, n:"Proof-of-Possession Key Semantics", gives:"A token claim (cnf) saying which key its holder must prove", d:"Defines the cnf claim that binds a JWT to a key, the basis of proof-of-possession tokens.", u:"https://www.rfc-editor.org/rfc/rfc7800"},
+  "well-known":{rfc:8615, n:"Well-Known URIs", gives:"Predictable /.well-known/ locations for discovery documents", d:"Reserves the /.well-known/ path prefix so clients can find metadata on any site without prior configuration.", u:"https://www.rfc-editor.org/rfc/rfc8615"},
+  "http-payment":{track:"indiv", n:"Payment HTTP Authentication Scheme", gives:"A standard HTTP way for a resource to ask for payment and for an agent to provide it", d:"Defines a \"Payment\" HTTP authentication scheme for paying for access to a resource.", u:"https://datatracker.ietf.org/doc/draft-ryan-httpauth-payment/"}
 };

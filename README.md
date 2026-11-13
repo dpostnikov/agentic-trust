@@ -19,6 +19,7 @@ An interactive map of trust relationships in agentic systems. It covers the user
 |---|---|---|
 | AIMS (Agent Identity Management System) | `#aims` | [draft-ietf-wimse-aims](https://datatracker.ietf.org/doc/draft-ietf-wimse-aims/) |
 | Mission-Bound Authorization | `#mission` | Karl McGuinness's individual drafts: [handbook](https://notes.karlmcguinness.com/mission-handbook/), [drafts](https://github.com/mcguinness/mission-bound-authorization). The 16 key drafts of 52 are shown. |
+| AAuth (Agent Auth Protocol) | `#aauth` | Dick Hardt's individual draft: [draft-hardt-oauth-aauth-protocol](https://datatracker.ietf.org/doc/draft-hardt-oauth-aauth-protocol/). A new protocol rather than an OAuth extension. |
 | Poppy (Personal Agent Protocol) | `#poppy` | Sierra and Meta draft: [personalagentprotocol.org](https://personalagentprotocol.org/) |
 
 Add the link to the site URL to open a profile directly, e.g. https://dpostnikov.github.io/agentic-trust/#mission.
@@ -93,7 +94,7 @@ It warns about standards that are defined but not used anywhere.
 - **Hover cards:** each standard has a `gives` line and a clickable spec link; spec links point to the spec itself.
 - **Maturity badges:** RFC numbers, WG and individual draft markers, and OpenID Final / Implementer's Draft (ID1, ID2…) markers.
 - **FAPI-CIBA:** the CIBA entry now refers to the FAPI CIBA profile.
-- **Profiles:** AIMS, Poppy and Mission-Bound Authorization, filtering the standards matrix only.
+- **Profiles:** AIMS, Poppy, Mission-Bound Authorization and AAuth, filtering the standards matrix only.
 - **Content fixes:** OAuth removed from user authentication, since it's authorisation, not authentication; Poppy linked to its own draft.
 - **Deploy:** cache-busting so the page and its data always match.
 - **Rename:** the project is now the Agentic Trust Standards Map.
