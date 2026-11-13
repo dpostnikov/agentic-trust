@@ -120,7 +120,7 @@ td.empty span{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
 .col-hi{background:var(--tint)!important}
 td.empty.col-hi{background:repeating-linear-gradient(135deg,var(--tint) 0 6px,var(--hatch) 6px 7px)!important}
 /* profiles */
-.profiles{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.profiles{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .profiles .lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-right:4px}
 .pbtn{all:unset;cursor:pointer;font-size:13.5px;font-weight:500;padding:6px 12px;border-radius:999px;border:1px solid var(--rule);background:var(--surface);color:var(--ink)}
 .pbtn small{font-weight:400;color:var(--muted);margin-left:6px;font-size:12px}
@@ -128,12 +128,16 @@ td.empty.col-hi{background:repeating-linear-gradient(135deg,var(--tint) 0 6px,va
 .pbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .pbtn[aria-checked="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
 .pbtn[aria-checked="true"] small{color:inherit;opacity:.8}
-.chip.is-out{opacity:.22}
-.chip.is-out:hover,.chip.is-out:focus-visible{opacity:.7}
-.chip.in-prof{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.chip.in-prof.is-hi{box-shadow:none}
-svg.has-prof .edge.is-out{opacity:.15}
-svg.has-prof .edge.is-in:not(.is-hi) path.vis{stroke:var(--accent);stroke-opacity:.55}
+#matrix .chip.is-out{opacity:.22}
+#matrix .chip.is-out:hover,#matrix .chip.is-out:focus-visible{opacity:.7}
+#matrix .chip.in-prof{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+#matrix .chip.in-prof.is-hi{box-shadow:none}
+.pnote{padding:14px 16px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:8px 28px;align-items:start}
+@media (max-width:760px){.pnote{grid-template-columns:1fr}}
+.pnote h3{margin:0;font-size:16px;font-weight:600}
+.pnote h3 span{font-weight:400;color:var(--muted);font-size:14px}
+.pnote p{margin:0;font-size:14px;max-width:72ch}
+.pnote .stack{display:grid;gap:6px;min-width:0}
 .openlist{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13.5px;color:var(--ink)}
 footer{color:var(--muted);font-size:12.5px;max-width:80ch}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -145,7 +149,6 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     <div class="eyebrow">Agentic identity · trust model &amp; standards stack</div>
     <h1>Agentic Trust Map</h1>
     <p>Who vouches for whom when an agent acts for a user, and which standards cover each layer. Select an entity, a relationship or a standard and the diagram, inspector and matrix follow.</p>
-    <div class="profiles" role="radiogroup" aria-label="Standards profile" id="profiles"></div>
   </header>
 
   <section class="top">
@@ -164,10 +167,12 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
       <h2>Standards by layer</h2>
       <p>Hatched cells have no standard mapped. Dashed chips are concepts rather than specs.</p>
     </div>
+    <div class="profiles" role="radiogroup" aria-label="Filter standards by profile" id="profiles"></div>
+    <div class="panel pnote" id="pnote" hidden></div>
     <div class="tbox"><table id="matrix"></table></div>
   </section>
 
-  <footer>Transcribed from the two source diagrams (mental model and architecture layering); small labels were hard to read, so check spec names before sharing. Content lives in the DATA block of the page source.</footer>
+  <footer>Transcribed from the two source diagrams (mental model and architecture layering); small labels were hard to read, so check spec names before sharing. Content lives in data.js in the GitHub repo.</footer>
 </div>
 
 <!-- All content (entities, relationships, layers, standards, profiles) lives in data.js -->
@@ -260,25 +265,6 @@ function columnStandards(kind) {
 }
 
 function render(sel) {
-  if (!sel && profile) {
-    const P = PROFILES[profile], inP = new Set(P.std);
-    const placed = new Set();
-    const rows = LAYERS.map(L => {
-      const ids = [...new Set(COLS.flatMap(c => L.cells[c]).filter(id => inP.has(id)))]; ids.forEach(i=>placed.add(i));
-      return `<div class="layer-line"><span>${L.name}</span>${ids.length?`<div class="chips">${ids.map(chip).join("")}</div>`:`<span class="gapnote">Not covered</span>`}</div>`;
-    }).join("");
-    const comp = COMPLIANCE.std.filter(id => inP.has(id)); comp.forEach(i=>placed.add(i));
-    const rels = EDGES.filter(e => e.std.some(s => inP.has(s)) && (!e.suggested || sugg.checked));
-    insp.innerHTML = `<span class="tag" style="--k:var(--accent)">Profile · ${P.by}</span>
-      <h3>${P.name} <span class="muted" style="font-weight:400;font-size:15px">· ${P.full}</span></h3>
-      <p>${P.summary}</p>
-      <a class="link" href="${P.u}" target="_blank" rel="noopener">${P.u.replace(/^https:\/\//,"")}</a>
-      <div class="sec"><div class="sec-h">${P.std.length} standards by layer</div>${rows}
-        <div class="layer-line"><span>${COMPLIANCE.name}</span>${comp.length?`<div class="chips">${comp.map(chip).join("")}</div>`:`<span class="gapnote">Not covered</span>`}</div></div>
-      <div class="sec"><div class="sec-h">Left open</div><ul class="openlist">${P.open.map(o=>`<li>${o}</li>`).join("")}</ul></div>
-      ${rels.length?`<div class="sec"><div class="sec-h">Relationships it touches</div>${rels.map(relBtn).join("")}</div>`:""}`;
-    return;
-  }
   if (!sel) {
     insp.innerHTML = `<span class="tag">Inspector</span><h3>Pick anything to trace it</h3>
       <p class="muted">Select a box or arrow in the diagram, a column heading, or a standard chip. The other views highlight what's connected.</p>
@@ -340,12 +326,8 @@ function highlight(sel) {
   NODES.forEach(n => { n.g.classList.toggle("is-hi", hiNodes.has(n.id)); n.g.classList.toggle("is-sel", !!sel && sel.type==="node" && sel.id===n.id); });
   EDGES.forEach(e => { const on = hiEdges.has(e.id); e.g.classList.toggle("is-hi", on);
     e.g.querySelector("path.vis").setAttribute("marker-end", on ? "url(#arrowHi)" : "url(#arrow)"); });
-  const inP = profile ? new Set(PROFILES[profile].std) : null;
-  svg.classList.toggle("has-prof", !!inP);
-  EDGES.forEach(e => { const on = !!inP && e.std.some(s => inP.has(s));
-    e.g.classList.toggle("is-in", on); e.g.classList.toggle("is-out", !!inP && !on); });
-  document.querySelectorAll(".chip").forEach(c => { c.classList.toggle("is-hi", hiStd.has(c.dataset.std));
-    c.classList.toggle("in-prof", !!inP && inP.has(c.dataset.std)); c.classList.toggle("is-out", !!inP && !inP.has(c.dataset.std)); });
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("is-hi", hiStd.has(c.dataset.std)));
+  applyProfile();
   table.querySelectorAll("[data-col]").forEach(c => c.classList.toggle("col-hi", c.dataset.col === col));
 }
 
@@ -359,14 +341,32 @@ const pbar = document.getElementById("profiles");
 pbar.innerHTML = `<span class="lbl">Profile</span>` +
   `<button class="pbtn" role="radio" data-prof="">All standards<small>${Object.keys(STD).length}</small></button>` +
   Object.entries(PROFILES).map(([id,P]) => `<button class="pbtn" role="radio" data-prof="${id}">${P.name}<small>${P.std.length}</small></button>`).join("");
+const pnote = document.getElementById("pnote");
+// Profiles filter the standards matrix only; the diagram and inspector are unaffected.
+function applyProfile() {
+  const inP = profile ? new Set(PROFILES[profile].std) : null;
+  table.querySelectorAll(".chip").forEach(c => {
+    c.classList.toggle("in-prof", !!inP && inP.has(c.dataset.std));
+    c.classList.toggle("is-out", !!inP && !inP.has(c.dataset.std)); });
+}
 function setProfile(id, fromHash) {
   profile = PROFILES[id] ? id : null;
   pbar.querySelectorAll(".pbtn").forEach(b => b.setAttribute("aria-checked", String((b.dataset.prof||null) === profile)));
   if (!fromHash) { try { history.replaceState(null, "", profile ? "#"+profile : location.pathname + location.search); } catch(e) { location.hash = profile || ""; } }
-  select(null);
+  if (profile) {
+    const P = PROFILES[profile];
+    pnote.innerHTML = `<div class="stack"><span class="tag" style="--k:var(--accent)">Profile · ${P.by}</span>
+        <h3>${P.name} <span>· ${P.full}</span></h3><p>${P.summary}</p>
+        <a class="link" href="${P.u}" target="_blank" rel="noopener">${P.u.replace(/^https:\/\//,"")}</a></div>
+      <div class="stack"><div class="sec-h" style="border-top:0;padding-top:0">Left open</div>
+        <ul class="openlist">${P.open.map(o=>`<li>${o}</li>`).join("")}</ul></div>`;
+  }
+  pnote.hidden = !profile;
+  applyProfile();
 }
 pbar.addEventListener("click", ev => { const b = ev.target.closest(".pbtn"); if (b) setProfile(b.dataset.prof); });
 window.addEventListener("hashchange", () => setProfile(location.hash.slice(1), true));
+select(null);
 setProfile(location.hash.slice(1), true);
 </script>
 </body>

@@ -33,7 +33,7 @@ All content is in [`data.js`](data.js). You should rarely need to touch `index.h
 
 **Add an entity box**: add to `NODES` with a free spot on the canvas.
 
-**Add a profile**: add an entry to `PROFILES`. Every id in its `std` list must be placed somewhere in the matrix. Link straight to a profile with `#<profile-id>`, e.g. `index.html#aims`.
+**Add a profile**: add an entry to `PROFILES`. Profiles filter only the standards-by-layer matrix; the diagram and inspector are unaffected. Every id in its `std` list must be placed somewhere in the matrix. Link straight to a profile with `#<profile-id>`, e.g. `index.html#aims`.
 
 ### Profiles
 
