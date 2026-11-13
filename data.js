@@ -1,6 +1,7 @@
 /*
  * Agentic Trust Map — content.
  * Edit this file to change what the page shows. See README.md for the schema.
+ * STD entries: n name, d description, u URL, rfc (number, if published as an RFC), concept (true for non-specs).
  * Loaded as a classic script so the page works when opened straight from disk.
  */
 
@@ -86,15 +87,15 @@ const PROFILES = {
   },
   poppy: {
     name:"Poppy", full:"Personal Agent Protocol", by:"Sierra and Meta (draft)",
-    u:"https://www.descope.com/learn/post/personal-agent-protocol",
-    summary:"How a user's personal agent discovers a business, signs in to it with the user's approval, and talks to its agent, website or APIs. Built almost entirely on OAuth: CIMD for agent identity, DPoP-bound session tokens, refresh tokens as account tokens.",
+    u:"https://personalagentprotocol.org/",
+    summary:"How a user's personal agent discovers a business, signs in to it with the user's approval, and talks to its agent, website or APIs. Built on OAuth, JWT, HTTPS, OpenAPI and MCP: CIMD for agent identity, DPoP-bound session tokens, refresh tokens as account tokens.",
     open:["Payments not yet addressed","Mediated sign-in defines its own exchange, no existing standard","Format of the signed session-start assertion not named","No workload identity or federation layer"],
     std:["cimd","client-id","oauth2","access-token","refresh-token","dpop","pkce","device-grant","as-meta","poppy-json","mcp","openapi"]
   }
 };
 
 const STD = {
-  "prm":{n:"Protected Resource Metadata", d:"RFC 9728. A resource publishes which authorization servers it trusts, the scopes it supports and how tokens must be presented, so agents can discover how to get access.", u:"https://www.rfc-editor.org/rfc/rfc9728"},
+  "prm":{rfc:9728, n:"Protected Resource Metadata", d:"A resource publishes which authorization servers it trusts, the scopes it supports and how tokens must be presented, so agents can discover how to get access.", u:"https://www.rfc-editor.org/rfc/rfc9728"},
   "cimd":{n:"Client ID Metadata Document", d:"The client_id is an HTTPS URL that resolves to the client's metadata, removing the need for dynamic registration with every server. Adopted by MCP.", u:"https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/"},
   "oidfed":{n:"OpenID Federation", d:"Builds trust chains of signed entity statements from a leaf entity up to a trust anchor, with metadata policy applied along the chain.", u:"https://openid.net/specs/openid-federation-1_0.html"},
   "entity-stmt":{n:"Entity Statement", d:"A signed JWT in OpenID Federation describing an entity's keys, metadata and policy, issued by itself or by a superior.", u:"https://openid.net/specs/openid-federation-1_0.html"},
@@ -103,8 +104,8 @@ const STD = {
   "a2a-card":{n:"A2A Agent Card", d:"A JSON document describing an agent's skills, endpoints and authentication requirements, used for discovery in the Agent2Agent protocol.", u:"https://a2a-protocol.org/"},
   "a2a":{n:"Agent2Agent (A2A)", d:"A protocol for agents to discover each other and exchange tasks and messages, using standard web authentication schemes.", u:"https://a2a-protocol.org/"},
   "mcp":{n:"Model Context Protocol", d:"A protocol for agents to call tools and read resources. Its authorization profile builds on OAuth 2.1, Protected Resource Metadata and client ID metadata documents.", u:"https://modelcontextprotocol.io/"},
-  "jwt-sub":{n:"JWT sub claim", d:"The subject identifier in a JWT, unique within its issuer. Paired with iss it identifies the user.", u:"https://www.rfc-editor.org/rfc/rfc7519"},
-  "uri":{n:"Resource URI", d:"The resource's absolute URI, also used as an OAuth resource indicator (RFC 8707) to audience-restrict tokens.", u:"https://www.rfc-editor.org/rfc/rfc8707"},
+  "jwt-sub":{rfc:7519, n:"JWT sub claim", d:"The subject identifier in a JWT, unique within its issuer. Paired with iss it identifies the user.", u:"https://www.rfc-editor.org/rfc/rfc7519"},
+  "uri":{rfc:8707, n:"Resource URI", d:"The resource's absolute URI, also used as an OAuth resource indicator to audience-restrict tokens.", u:"https://www.rfc-editor.org/rfc/rfc8707"},
   "spiffe-id":{n:"SPIFFE ID", d:"A URI of the form spiffe://trust-domain/path naming a workload within a trust domain.", u:"https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/"},
   "x509-svid":{n:"X.509-SVID", d:"A SPIFFE identity document carried as an X.509 certificate, used for mTLS between workloads.", u:"https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/"},
   "jwt-svid":{n:"JWT-SVID", d:"A SPIFFE identity document carried as a JWT, for cases where mTLS isn't available end to end.", u:"https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/"},
@@ -112,23 +113,23 @@ const STD = {
   "wit":{n:"WIMSE Workload Identity Token", d:"A JWT binding a workload identifier to a public key, issued by the workload's identity server.", u:"https://datatracker.ietf.org/wg/wimse/about/"},
   "wpt":{n:"WIMSE Workload Proof Token", d:"A per-request proof of possession of the key in the identity token, so stolen tokens can't be replayed.", u:"https://datatracker.ietf.org/wg/wimse/about/"},
   "did":{n:"Decentralized Identifier", d:"W3C DID: an identifier resolvable to a document of keys and endpoints, without a central registry.", u:"https://www.w3.org/TR/did-core/"},
-  "client-id":{n:"OAuth client_id", d:"The identifier an authorization server assigns to, or accepts for, a client application.", u:"https://www.rfc-editor.org/rfc/rfc6749"},
+  "client-id":{rfc:6749, n:"OAuth client_id", d:"The identifier an authorization server assigns to, or accepts for, a client application.", u:"https://www.rfc-editor.org/rfc/rfc6749"},
   "lei":{n:"Legal Entity Identifier", d:"ISO 17442 identifier for legal entities, administered by GLEIF. The vLEI variant packages it as verifiable credentials, including role credentials.", u:"https://www.gleif.org/"},
-  "access-token":{n:"OAuth access token", d:"The credential an agent presents to a resource on the user's behalf. Should be audience-restricted and sender-constrained.", u:"https://www.rfc-editor.org/rfc/rfc6749"},
+  "access-token":{rfc:6749, n:"OAuth access token", d:"The credential an agent presents to a resource on the user's behalf. Should be audience-restricted and sender-constrained.", u:"https://www.rfc-editor.org/rfc/rfc6749"},
   "passkeys":{n:"Passkeys", d:"FIDO2 / WebAuthn credentials for phishing-resistant user authentication.", u:"https://fidoalliance.org/passkeys/"},
-  "x509":{n:"X.509 certificates", d:"Public-key certificates chained to a certificate authority. The base of TLS and many organisational credentials.", u:"https://www.rfc-editor.org/rfc/rfc5280"},
-  "pkjwt":{n:"private_key_jwt", d:"Client authentication by a JWT signed with the client's private key (OIDC Core, RFC 7523).", u:"https://www.rfc-editor.org/rfc/rfc7523"},
-  "oauth2":{n:"OAuth 2.x", d:"The delegated authorization framework (RFC 6749, consolidated in the OAuth 2.1 draft).", u:"https://oauth.net/2.1/"},
+  "x509":{rfc:5280, n:"X.509 certificates", d:"Public-key certificates chained to a certificate authority. The base of TLS and many organisational credentials.", u:"https://www.rfc-editor.org/rfc/rfc5280"},
+  "pkjwt":{rfc:7523, n:"private_key_jwt", d:"Client authentication by a JWT signed with the client's private key (OIDC Core and the JWT client-auth profile).", u:"https://www.rfc-editor.org/rfc/rfc7523"},
+  "oauth2":{rfc:6749, n:"OAuth 2.x", d:"The delegated authorization framework, consolidated with its security updates in the OAuth 2.1 draft.", u:"https://www.rfc-editor.org/rfc/rfc6749"},
   "oidc":{n:"OpenID Connect", d:"Identity layer on OAuth 2.0: authenticates the user and issues an ID token.", u:"https://openid.net/specs/openid-connect-core-1_0.html"},
-  "mtls":{n:"Mutual TLS", d:"Both sides present certificates. RFC 8705 also binds OAuth tokens to the client certificate.", u:"https://www.rfc-editor.org/rfc/rfc8705"},
-  "tls":{n:"TLS", d:"Transport security that authenticates the resource's endpoint to the caller.", u:"https://www.rfc-editor.org/rfc/rfc8446"},
-  "httpsig":{n:"HTTP Message Signatures", d:"RFC 9421. Signs selected components of an HTTP request, proving the sender and integrity across proxies.", u:"https://www.rfc-editor.org/rfc/rfc9421"},
+  "mtls":{rfc:8705, n:"Mutual TLS", d:"Both sides present certificates. RFC 8705 defines this for OAuth client authentication and binds tokens to the client certificate.", u:"https://www.rfc-editor.org/rfc/rfc8705"},
+  "tls":{rfc:8446, n:"TLS", d:"Transport security that authenticates the resource's endpoint to the caller.", u:"https://www.rfc-editor.org/rfc/rfc8446"},
+  "httpsig":{rfc:9421, n:"HTTP Message Signatures", d:"Signs selected components of an HTTP request, proving the sender and integrity across proxies.", u:"https://www.rfc-editor.org/rfc/rfc9421"},
   "grant-mgmt":{n:"Grant Management", d:"OpenID FAPI extension to query, update and revoke the grants a user has given a client.", u:"https://openid.net/specs/fapi-grant-management.html"},
   "ciba":{n:"CIBA", d:"Client-Initiated Backchannel Authentication: the client asks for approval and the user confirms on a separate device. A natural fit for agents seeking human sign-off.", u:"https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html"},
   "authzen":{n:"AuthZEN", d:"OpenID standard API between policy enforcement and policy decision points, so resources can ask a PDP for access decisions.", u:"https://openid.net/wg/authzen/"},
   "txn-tokens":{n:"Transaction Tokens", d:"Short-lived tokens that carry user identity and request context through a chain of internal workloads.", u:"https://datatracker.ietf.org/doc/draft-ietf-oauth-transaction-tokens/"},
   "id-jag":{n:"Identity Assertion Authorization Grant", d:"ID-JAG: the user's IdP issues an assertion the agent exchanges for an access token in another domain, keeping the enterprise IdP in control of cross-app access.", u:"https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/"},
-  "token-exchange":{n:"Token Exchange", d:"RFC 8693. Trades one token for another, with act and may_act claims expressing delegation chains.", u:"https://www.rfc-editor.org/rfc/rfc8693"},
+  "token-exchange":{rfc:8693, n:"Token Exchange", d:"Trades one token for another, with act and may_act claims expressing delegation chains.", u:"https://www.rfc-editor.org/rfc/rfc8693"},
   "delegated-authority":{n:"Delegated authority", concept:true, d:"How an organisation expresses that a person or agent may act for it. No single standard covers this; vLEI role credentials and federation metadata are partial approaches."},
   "etsi-tl":{n:"ETSI Trusted Lists", d:"ETSI TS 119 612 lists of qualified trust service providers, used in the EU eIDAS ecosystem.", u:"https://www.etsi.org/"},
   "x402":{n:"x402", d:"An open payments protocol built on HTTP 402 Payment Required, letting agents pay for resources per request.", u:"https://www.x402.org/"},
@@ -136,19 +137,19 @@ const STD = {
   "caep":{n:"CAEP", d:"Continuous Access Evaluation Profile: session and credential change events so access can be revoked mid-session.", u:"https://openid.net/wg/sharedsignals/"},
   "risc":{n:"RISC", d:"Risk Incident Sharing and Coordination: account-level security events such as compromise or credential change.", u:"https://openid.net/wg/sharedsignals/"},
   "wise":{n:"WISE", d:"Workload Identity Security Events: a Shared Signals profile for events about workloads and their credentials.", u:"https://openid.net/wg/sharedsignals/"},
-  "as-meta":{n:"AS Metadata", d:"RFC 8414. An authorization server publishes its endpoints, supported grants and keys at a well-known URL.", u:"https://www.rfc-editor.org/rfc/rfc8414"},
-  "dcr":{n:"Dynamic Client Registration", d:"RFC 7591. A client registers itself with an authorization server at runtime.", u:"https://www.rfc-editor.org/rfc/rfc7591"},
+  "as-meta":{rfc:8414, n:"AS Metadata", d:"An authorization server publishes its endpoints, supported grants and keys at a well-known URL.", u:"https://www.rfc-editor.org/rfc/rfc8414"},
+  "dcr":{rfc:7591, n:"Dynamic Client Registration", d:"A client registers itself with an authorization server at runtime.", u:"https://www.rfc-editor.org/rfc/rfc7591"},
   "wic":{n:"WIMSE Workload Identity Certificate", d:"The X.509 form of a WIMSE workload credential, used for mTLS.", u:"https://datatracker.ietf.org/doc/draft-ietf-wimse-workload-creds/"},
   "spiffe-client-auth":{n:"OAuth SPIFFE Client Authentication", d:"Lets a workload authenticate to an OAuth server with its SPIFFE credential instead of a client secret.", u:"https://datatracker.ietf.org/doc/draft-ietf-oauth-spiffe-client-auth/"},
-  "introspection":{n:"Token Introspection", d:"RFC 7662. A resource asks the authorization server whether a token is active and what it allows.", u:"https://www.rfc-editor.org/rfc/rfc7662"},
-  "jwt-at":{n:"JWT Access Tokens", d:"RFC 9068. A standard JWT format for access tokens so resources can validate them locally.", u:"https://www.rfc-editor.org/rfc/rfc9068"},
-  "dpop":{n:"DPoP", d:"RFC 9449. Binds tokens to a key the client holds, proven per request, so stolen tokens can't be replayed.", u:"https://www.rfc-editor.org/rfc/rfc9449"},
+  "introspection":{rfc:7662, n:"Token Introspection", d:"A resource asks the authorization server whether a token is active and what it allows.", u:"https://www.rfc-editor.org/rfc/rfc7662"},
+  "jwt-at":{rfc:9068, n:"JWT Access Tokens", d:"A standard JWT format for access tokens so resources can validate them locally.", u:"https://www.rfc-editor.org/rfc/rfc9068"},
+  "dpop":{rfc:9449, n:"DPoP", d:"Binds tokens to a key the client holds, proven per request, so stolen tokens can't be replayed.", u:"https://www.rfc-editor.org/rfc/rfc9449"},
   "identity-chaining":{n:"Identity & Authorization Chaining", d:"Carries identity and authority across trust domains by combining token exchange with a JWT authorization grant.", u:"https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-chaining/"},
-  "oauth-bcp":{n:"OAuth Security BCP", d:"RFC 9700. Current best practice for securing OAuth deployments.", u:"https://www.rfc-editor.org/rfc/rfc9700"},
+  "oauth-bcp":{rfc:9700, n:"OAuth Security BCP", d:"Current best practice for securing OAuth deployments.", u:"https://www.rfc-editor.org/rfc/rfc9700"},
   "fapi2":{n:"FAPI 2.0 Security Profile", d:"OpenID high-assurance OAuth profile: sender-constrained tokens, PAR, strict client authentication.", u:"https://openid.net/wg/fapi/"},
-  "poppy-json":{n:"poppy.json discovery", d:"Poppy's /.well-known/poppy.json document, telling a personal agent how to sign in to and interact with a business.", u:"https://www.descope.com/learn/post/personal-agent-protocol"},
-  "refresh-token":{n:"OAuth refresh token", d:"Long-lived credential for getting new access tokens. Poppy uses it as the agent's account token.", u:"https://www.rfc-editor.org/rfc/rfc6749#section-1.5"},
-  "pkce":{n:"Auth code + PKCE", d:"RFC 7636. The authorization code flow with proof key, for interactive sign-in by public clients.", u:"https://www.rfc-editor.org/rfc/rfc7636"},
-  "device-grant":{n:"Device Authorization Grant", d:"RFC 8628. The user approves on a second device, useful when the agent has no browser.", u:"https://www.rfc-editor.org/rfc/rfc8628"},
+  "poppy-json":{n:"poppy.json discovery", d:"Poppy's /.well-known/poppy.json document, telling a personal agent how to sign in to and interact with a business.", u:"https://personalagentprotocol.org/"},
+  "refresh-token":{rfc:6749, n:"OAuth refresh token", d:"Long-lived credential for getting new access tokens. Poppy uses it as the agent's account token.", u:"https://www.rfc-editor.org/rfc/rfc6749#section-1.5"},
+  "pkce":{rfc:7636, n:"Auth code + PKCE", d:"The authorization code flow with proof key, for interactive sign-in by public clients.", u:"https://www.rfc-editor.org/rfc/rfc7636"},
+  "device-grant":{rfc:8628, n:"Device Authorization Grant", d:"The user approves on a second device, useful when the agent has no browser.", u:"https://www.rfc-editor.org/rfc/rfc8628"},
   "openapi":{n:"OpenAPI", d:"Machine-readable description of HTTP APIs, so agents can call them without custom integration.", u:"https://spec.openapis.org/oas/latest.html"}
 };

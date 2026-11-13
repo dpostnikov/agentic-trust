@@ -98,6 +98,8 @@ svg:not(.show-suggested) .edge.suggested{display:none}
 .chip:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .chip.is-hi{background:var(--accent);border-color:var(--accent);color:var(--surface)}
 .chip.concept{border-style:dashed}
+.chip .rfc{margin-left:6px;padding-left:6px;border-left:1px solid var(--rule);color:var(--muted);font-size:10.5px;white-space:nowrap}
+.chip.is-hi .rfc{color:inherit;opacity:.8;border-left-color:currentColor}
 
 /* matrix */
 .matrix-head{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;justify-content:space-between}
@@ -239,7 +241,8 @@ const applySugg = () => svg.classList.toggle("show-suggested", sugg.checked);
 sugg.addEventListener("change", applySugg); applySugg();
 
 // matrix
-const chip = id => `<button class="chip${STD[id].concept?" concept":""}" data-std="${id}" title="${STD[id].n}">${STD[id].n}</button>`;
+const chip = id => { const s = STD[id];
+  return `<button class="chip${s.concept?" concept":""}" data-std="${id}" title="${s.n}${s.rfc?" (RFC "+s.rfc+")":""}">${s.n}${s.rfc?`<span class="rfc">RFC ${s.rfc}</span>`:""}</button>`; };
 const table = document.getElementById("matrix");
 table.innerHTML =
   `<colgroup><col class="layer">${COLS.map(()=>"<col>").join("")}</colgroup>` +
@@ -296,7 +299,7 @@ function render(sel) {
     LAYERS.forEach(L => COLS.forEach(c => { if (L.cells[c].includes(sel.id)) where.push(`${KINDS[c].name} · ${L.name}`); }));
     if (COMPLIANCE.std.includes(sel.id)) where.push(COMPLIANCE.name);
     const rels = EDGES.filter(e => e.std.includes(sel.id) && (!e.suggested || sugg.checked));
-    insp.innerHTML = `<span class="tag" style="--k:var(--accent)">${s.concept?"Concept":"Standard"}</span><h3>${s.n}</h3><p>${s.d}</p>
+    insp.innerHTML = `<span class="tag" style="--k:var(--accent)">${s.concept?"Concept":s.rfc?"Standard · RFC "+s.rfc:"Standard"}</span><h3>${s.n}</h3><p>${s.d}</p>
       ${s.u?`<a class="link" href="${s.u}" target="_blank" rel="noopener">${s.u.replace(/^https:\/\//,"")}</a>`:""}
       ${where.length?`<div class="sec"><div class="sec-h">In the matrix</div>${where.map(w=>`<div class="muted">${w}</div>`).join("")}</div>`:""}
       ${rels.length?`<div class="sec"><div class="sec-h">Used on</div>${rels.map(relBtn).join("")}</div>`:""}
