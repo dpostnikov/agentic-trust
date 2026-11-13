@@ -9,7 +9,7 @@ An interactive map of trust relationships in agentic systems. It covers the user
 - **Trust diagram.** Shows who owns, operates, authorises, endorses and accesses what. A toggle shows *suggested* relationships (dashed). These are the "on behalf of user" chain and each trust anchor federating to the ecosystem anchor.
 - **Inspector.** Click any box, arrow, column heading or standard to see what it is, how it relates, and which standards apply.
 - **Standards by layer.** A matrix with entities as columns and layers as rows. Hatched cells are gaps with no standard mapped. Dashed chips are concepts rather than specs.
-- **Maturity badges.** Every chip shows the RFC number if published, otherwise **WG draft** (working-group Internet-Draft) or ***Indiv. draft*** (individual Internet-Draft).
+- **Maturity badges.** IETF specs show the RFC number if published, otherwise **WG draft** (working-group Internet-Draft) or ***Indiv. draft*** (individual Internet-Draft). OpenID Foundation specs show **Final** or **ID1**, **ID2**… (Implementer's Draft 1, 2…).
 - **Hover cards.** Hover or tab to any block to see what it delivers to the stack. Each standard's card also shows where it sits, which profiles use it, and a clickable link to its spec.
 - **Profiles.** A switch above the matrix highlights the standards a given specification uses, with a short summary and what it leaves open. It filters the matrix only; the diagram and inspector are unaffected.
 
@@ -52,12 +52,14 @@ All content is in [`data.js`](data.js). You should rarely need to touch `index.h
 | `u` | yes, unless `concept` | `https` link to the spec itself, not a working-group home page |
 | `rfc` | if published | RFC number, shown as a badge |
 | `track` | for Internet-Drafts | `"wg"` or `"indiv"`. Remove it when the draft becomes an RFC |
+| `oidf` | for OpenID Foundation specs | `"Final"`, or `"ID1"`, `"ID2"`… for the latest approved Implementer's Draft |
 | `concept` | optional | `true` for ideas with no spec yet (shown dashed) |
 
 ### Common changes
 
 - **Add a standard.** Add an entry to `STD`, then reference its id in a `LAYERS[].cells` list and/or an edge's `std` list.
 - **A draft becomes an RFC.** Replace `track` with `rfc: <number>` and point `u` at rfc-editor.org.
+- **An OpenID spec advances.** Change `oidf` to the new Implementer's Draft number or to `"Final"`.
 - **Add a relationship.** Add an entry to `EDGES` with existing node ids. Use `bend` to curve it away from other arrows.
 - **Add an entity box.** Add to `NODES` with a free spot on the canvas.
 - **Add a profile.** Add an entry to `PROFILES`. Every id in its `std` list must be placed somewhere in the matrix.
@@ -73,6 +75,7 @@ The validator fails on:
 - missing matrix cells (use `[]` for a gap)
 - a standard without `n`, `d`, `gives`, or an `https` URL
 - a `track` value other than `wg` or `indiv`, or a standard with both `rfc` and `track`
+- an `oidf` value other than `Final` or `ID<n>`, or one combined with `rfc` or `track`
 - a profile that lists a standard not placed in the matrix
 
 It warns about standards that are defined but not used anywhere.
@@ -88,7 +91,8 @@ It warns about standards that are defined but not used anywhere.
 ## Changes
 
 - **Hover cards:** each standard has a `gives` line and a clickable spec link; spec links point to the spec itself.
-- **Maturity badges:** RFC numbers, plus WG and individual draft markers.
+- **Maturity badges:** RFC numbers, WG and individual draft markers, and OpenID Final / Implementer's Draft (ID1, ID2…) markers.
+- **FAPI-CIBA:** the CIBA entry now refers to the FAPI CIBA profile.
 - **Profiles:** AIMS, Poppy and Mission-Bound Authorization, filtering the standards matrix only.
 - **Content fixes:** OAuth removed from user authentication, since it's authorisation, not authentication; Poppy linked to its own draft.
 - **Deploy:** cache-busting so the page and its data always match.

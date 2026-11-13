@@ -46,6 +46,8 @@ Object.entries(STD).forEach(([id, s]) => {
   if (s.u && !/^https:\/\//.test(s.u)) errors.push(`Standard "${id}": u must be an https URL`);
   if (s.track && !["wg","indiv"].includes(s.track)) errors.push(`Standard "${id}": track must be "wg" or "indiv"`);
   if (s.track && s.rfc) errors.push(`Standard "${id}": has both rfc and track; drop track once published`);
+  if (s.oidf && !/^(Final|ID[1-9]\d*)$/.test(s.oidf)) errors.push(`Standard "${id}": oidf must be "Final" or "ID1", "ID2"...`);
+  if (s.oidf && (s.rfc || s.track)) errors.push(`Standard "${id}": use oidf for OpenID specs, rfc/track for IETF ones, not both`);
 });
 
 const unused = Object.keys(STD).filter(id => !used.has(id));
