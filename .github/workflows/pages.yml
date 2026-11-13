@@ -34,7 +34,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - run: mkdir _site && cp index.html data.js _site/
+      - name: Build site
+        # Version data.js by commit so browsers never pair a new page with a cached old data file
+        run: |
+          mkdir _site && cp index.html data.js _site/
+          sed -i "s|src=\"data.js\"|src=\"data.js?v=${GITHUB_SHA::7}\"|" _site/index.html
+          grep -q "data.js?v=" _site/index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
