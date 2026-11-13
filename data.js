@@ -1,5 +1,5 @@
 /*
- * Agentic Trust Map — content.
+ * Agentic Trust Standards Map — content.
  * Edit this file to change what the page shows. See README.md for the schema.
  * STD entries: n name, d description, u URL, rfc (number, if published as an RFC),
  *   track ("wg" working-group draft, "indiv" individual draft), concept (true for non-specs).

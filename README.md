@@ -1,4 +1,4 @@
-# Agentic Trust Map
+# Agentic Trust Standards Map
 
 An interactive map of trust relationships in agentic systems (user, resource, agent/workload, organisations, trust anchors) cross-linked to the standards that cover each layer: discovery, identification, credentials, authentication, authorisation and delegation, protocols, and domain extensions.
 
