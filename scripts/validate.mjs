@@ -42,6 +42,8 @@ Object.entries(PROFILES || {}).forEach(([pid, P]) => {
 Object.entries(STD).forEach(([id, s]) => {
   if (!s.n || !s.d) errors.push(`Standard "${id}": needs n (name) and d (description)`);
   if (!s.concept && !s.u) errors.push(`Standard "${id}": needs u (URL) unless concept: true`);
+  if (s.track && !["wg","indiv"].includes(s.track)) errors.push(`Standard "${id}": track must be "wg" or "indiv"`);
+  if (s.track && s.rfc) errors.push(`Standard "${id}": has both rfc and track; drop track once published`);
 });
 
 const unused = Object.keys(STD).filter(id => !used.has(id));
