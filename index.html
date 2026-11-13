@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agentic Trust Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: header → trust diagram beside an inspector panel → full-width standards matrix, all cross-linked by selection */
+:root{
+  --bg:#f5f6fa; --surface:#ffffff; --ink:#161a2b; --muted:#5b6280; --line:#a2a8c2; --rule:#dde0ec;
+  --accent:#4a4ed4; --tint:rgba(74,78,212,.09); --hatch:rgba(91,98,128,.10);
+  --c-user:#2a68d0; --c-resource:#1c8456; --c-agent:#7442d0; --c-org:#a8640f; --c-ta:#0d7f8c; --c-eco:#5b6280;
+  --f-sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1220; --surface:#171b2d; --ink:#e5e7f4; --muted:#9aa1c0; --line:#5a6187; --rule:#2a2f48;
+  --accent:#9093ff; --tint:rgba(144,147,255,.13); --hatch:rgba(154,161,192,.10);
+  --c-user:#6ea3ff; --c-resource:#4fc690; --c-agent:#b28fff; --c-org:#e3a24c; --c-ta:#43c3d0; --c-eco:#9aa1c0;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1220; --surface:#171b2d; --ink:#e5e7f4; --muted:#9aa1c0; --line:#5a6187; --rule:#2a2f48;
+  --accent:#9093ff; --tint:rgba(144,147,255,.13); --hatch:rgba(154,161,192,.10);
+  --c-user:#6ea3ff; --c-resource:#4fc690; --c-agent:#b28fff; --c-org:#e3a24c; --c-ta:#43c3d0; --c-eco:#9aa1c0;
+  color-scheme:dark}
+
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-sans);font-size:15px;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto;padding-block:28px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:grid;gap:28px}
+header{display:grid;gap:6px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{margin:0;font-size:clamp(26px,4vw,36px);font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:0;color:var(--muted);max-width:68ch}
+h2{margin:0;font-size:18px;font-weight:600;text-wrap:balance}
+
+.top{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:920px){.top{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:10px}
+.diagram{padding:14px 14px 10px;display:grid;gap:10px;min-width:0}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;border:1.5px solid currentColor;display:inline-block}
+.toggle{display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer}
+.toggle input{accent-color:var(--accent);width:15px;height:15px}
+.svgbox{overflow-x:auto}
+svg#map{display:block;width:100%;min-width:680px;height:auto}
+
+/* diagram marks */
+.node rect{stroke-width:1.6;transition:opacity .15s}
+.node text{font-family:var(--f-sans);font-size:14px;font-weight:600;fill:var(--ink)}
+.node text.sub{font-family:var(--f-mono);font-size:10.5px;font-weight:400;fill:var(--muted)}
+.node{cursor:pointer;outline:none}
+.node:focus-visible rect{stroke-width:3}
+.node.is-sel rect{stroke-width:3}
+.edge path.vis{fill:none;stroke:var(--line);stroke-width:1.5;transition:stroke .15s,opacity .15s}
+.edge path.hit{fill:none;stroke:transparent;stroke-width:16;cursor:pointer}
+.edge.suggested path.vis{stroke-dasharray:5 5}
+.edge text{font-family:var(--f-mono);font-size:11px;fill:var(--muted);paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round;pointer-events:none}
+.edge.is-hi path.vis{stroke:var(--accent);stroke-width:2.4}
+.edge.is-hi text{fill:var(--accent);font-weight:500}
+.edge:focus-visible path.vis{stroke:var(--accent);stroke-width:3}
+.edge{outline:none}
+svg.has-sel .node:not(.is-hi) rect, svg.has-sel .node:not(.is-hi) text{opacity:.32}
+svg.has-sel .edge:not(.is-hi){opacity:.25}
+#arrow path{fill:var(--line)} #arrowHi path{fill:var(--accent)}
+svg:not(.show-suggested) .edge.suggested{display:none}
+
+/* inspector */
+.inspector{padding:18px;display:grid;gap:14px;align-content:start;min-width:0}
+@media (min-width:921px){.inspector{position:sticky;top:max(16px,env(safe-area-inset-top,0px));max-height:calc(100vh - 32px);overflow:auto}}
+.inspector h3{margin:0;font-size:20px;font-weight:700;line-height:1.25;text-wrap:balance}
+.inspector p{margin:0;color:var(--ink);max-width:62ch}
+.inspector .muted{color:var(--muted);font-size:13.5px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k,var(--muted))}
+.tag::before{content:"";width:8px;height:8px;border-radius:2px;background:currentColor}
+.sec{display:grid;gap:8px}
+.sec-h{font-family:var(--f-mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--rule);padding-top:10px}
+.layer-line{display:grid;grid-template-columns:118px minmax(0,1fr);gap:8px;font-size:13px;align-items:start}
+.layer-line > span:first-child{color:var(--muted);padding-top:3px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.rel{all:unset;cursor:pointer;display:block;font-size:13.5px;padding:5px 8px;border-radius:6px;border:1px solid var(--rule)}
+.rel:hover,.rel:focus-visible{border-color:var(--accent);background:var(--tint)}
+.rel b{font-weight:600}
+.link{color:var(--accent);font-size:13.5px;word-break:break-word}
+.clear{all:unset;cursor:pointer;font-size:12.5px;color:var(--accent);justify-self:start}
+.clear:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.gapnote{font-size:13px;color:var(--muted);font-style:italic}
+
+/* chips (shared by matrix + inspector) */
+.chip{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:11.5px;line-height:1.3;padding:3px 7px;border-radius:5px;
+  background:var(--bg);border:1px solid var(--rule);color:var(--ink);transition:background .12s,border-color .12s}
+.chip:hover{border-color:var(--accent)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.chip.is-hi{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.chip.concept{border-style:dashed}
+
+/* matrix */
+.matrix-head{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;justify-content:space-between}
+.matrix-head p{margin:0;color:var(--muted);font-size:13.5px}
+.tbox{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:860px;table-layout:fixed}
+col.layer{width:180px}
+th,td{border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);padding:10px;vertical-align:top;text-align:left}
+tr:last-child th,tr:last-child td{border-bottom:0}
+th:last-child,td:last-child{border-right:0}
+thead th{font-size:12px;font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase;font-weight:500;background:var(--bg)}
+thead th button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:var(--k)}
+thead th button::before{content:"";width:8px;height:8px;border-radius:2px;background:currentColor}
+thead th button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+tbody th{font-weight:600;font-size:13.5px;background:var(--bg)}
+tbody th small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+td .chips{gap:5px}
+td.empty{background:repeating-linear-gradient(135deg,transparent 0 6px,var(--hatch) 6px 7px)}
+td.empty span{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.col-hi{background:var(--tint)!important}
+td.empty.col-hi{background:repeating-linear-gradient(135deg,var(--tint) 0 6px,var(--hatch) 6px 7px)!important}
+/* profiles */
+.profiles{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.profiles .lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.pbtn{all:unset;cursor:pointer;font-size:13.5px;font-weight:500;padding:6px 12px;border-radius:999px;border:1px solid var(--rule);background:var(--surface);color:var(--ink)}
+.pbtn small{font-weight:400;color:var(--muted);margin-left:6px;font-size:12px}
+.pbtn:hover{border-color:var(--accent)}
+.pbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pbtn[aria-checked="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.pbtn[aria-checked="true"] small{color:inherit;opacity:.8}
+.chip.is-out{opacity:.22}
+.chip.is-out:hover,.chip.is-out:focus-visible{opacity:.7}
+.chip.in-prof{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.chip.in-prof.is-hi{box-shadow:none}
+svg.has-prof .edge.is-out{opacity:.15}
+svg.has-prof .edge.is-in:not(.is-hi) path.vis{stroke:var(--accent);stroke-opacity:.55}
+.openlist{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13.5px;color:var(--ink)}
+footer{color:var(--muted);font-size:12.5px;max-width:80ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Agentic identity · trust model &amp; standards stack</div>
+    <h1>Agentic Trust Map</h1>
+    <p>Who vouches for whom when an agent acts for a user, and which standards cover each layer. Select an entity, a relationship or a standard and the diagram, inspector and matrix follow.</p>
+    <div class="profiles" role="radiogroup" aria-label="Standards profile" id="profiles"></div>
+  </header>
+
+  <section class="top">
+    <div class="panel diagram">
+      <div class="toolbar">
+        <div class="legend" id="legend"></div>
+        <label class="toggle"><input type="checkbox" id="sugg" checked> Show suggested links</label>
+      </div>
+      <div class="svgbox"><svg id="map" viewBox="0 0 980 510" role="img" aria-label="Trust relationships between user, resource, agent, organisations and trust anchors"></svg></div>
+    </div>
+    <aside class="panel inspector" id="inspector" aria-live="polite"></aside>
+  </section>
+
+  <section style="display:grid;gap:12px">
+    <div class="matrix-head">
+      <h2>Standards by layer</h2>
+      <p>Hatched cells have no standard mapped. Dashed chips are concepts rather than specs.</p>
+    </div>
+    <div class="tbox"><table id="matrix"></table></div>
+  </section>
+
+  <footer>Transcribed from the two source diagrams (mental model and architecture layering); small labels were hard to read, so check spec names before sharing. Content lives in the DATA block of the page source.</footer>
+</div>
+
+<!-- All content (entities, relationships, layers, standards, profiles) lives in data.js -->
+<script src="data.js"></script>
+<script>
+/* ===================== RENDER ===================== */
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("map");
+const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
+NODES.forEach(n => { n.w = n.w || 150; n.h = n.h || 52; });
+const el = (tag, attrs={}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; };
+const kc = k => `var(${KINDS[k].color})`;
+
+// legend
+document.getElementById("legend").innerHTML = ["user","resource","agent","org","ta"].map(k =>
+  `<span style="color:${kc(k)}"><i></i><span style="color:var(--muted)">${KINDS[k].name}</span></span>`).join("");
+
+// markers
+const defs = el("defs", {}, svg);
+[["arrow"],["arrowHi"]].forEach(([id]) => {
+  const m = el("marker", {id, viewBox:"0 0 10 10", refX:"9", refY:"5", markerWidth:"7", markerHeight:"7", orient:"auto-start-reverse"}, defs);
+  el("path", {d:"M0,0 L10,5 L0,10 z"}, m);
+});
+
+function clip(a, b) { // point on a's box edge toward b
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const t = Math.min(a.w/2 / Math.abs(dx || 1e-9), a.h/2 / Math.abs(dy || 1e-9));
+  return {x: a.x + dx*t, y: a.y + dy*t};
+}
+const gEdges = el("g", {}, svg), gNodes = el("g", {}, svg);
+EDGES.forEach(e => {
+  const a = byId[e.from], b = byId[e.to];
+  let p1, p2;
+  if (b.kind === "eco") { p1 = {x:a.x, y:a.y + a.h/2}; p2 = {x:a.x, y:b.y - b.h/2}; }
+  else { p1 = clip(a, b); p2 = clip(b, a); }
+  const mx = (p1.x+p2.x)/2, my = (p1.y+p2.y)/2, dx = p2.x-p1.x, dy = p2.y-p1.y, len = Math.hypot(dx,dy);
+  const bend = e.bend || 0, cx = mx + (-dy/len)*bend, cy = my + (dx/len)*bend;
+  const d = `M${p1.x},${p1.y} Q${cx},${cy} ${p2.x},${p2.y}`;
+  const g = el("g", {class:"edge"+(e.suggested?" suggested":""), "data-id":e.id, tabindex:"0", role:"button",
+    "aria-label":`${a.label} ${e.label} ${b.label}`}, gEdges);
+  el("path", {class:"vis", d, "marker-end":"url(#arrow)"}, g);
+  el("path", {class:"hit", d}, g);
+  const lx = .25*p1.x + .5*cx + .25*p2.x, ly = .25*p1.y + .5*cy + .25*p2.y;
+  const t = el("text", {x:lx, y:ly+4, "text-anchor":"middle"}, g); t.textContent = e.label;
+  e.g = g;
+  g.addEventListener("click", ev => { ev.stopPropagation(); select({type:"edge", id:e.id}); });
+  g.addEventListener("keydown", ev => { if (ev.key==="Enter"||ev.key===" ") { ev.preventDefault(); select({type:"edge", id:e.id}); }});
+});
+NODES.forEach(n => {
+  const g = el("g", {class:"node", "data-id":n.id, tabindex:"0", role:"button", "aria-label":`${n.label}${n.sub?" ("+n.sub+")":""}`}, gNodes);
+  el("rect", {x:n.x-n.w/2, y:n.y-n.h/2, width:n.w, height:n.h, rx:"8",
+    style:`fill:color-mix(in srgb, ${kc(n.kind)} 10%, var(--surface));stroke:${kc(n.kind)}`}, g);
+  const t = el("text", {x:n.x, y:n.sub ? n.y-2 : n.y+5, "text-anchor":"middle"}, g); t.textContent = n.label;
+  if (n.sub) { const s = el("text", {class:"sub", x:n.x, y:n.y+14, "text-anchor":"middle"}, g); s.textContent = n.sub; }
+  n.g = g;
+  g.addEventListener("click", ev => { ev.stopPropagation(); select({type:"node", id:n.id}); });
+  g.addEventListener("keydown", ev => { if (ev.key==="Enter"||ev.key===" ") { ev.preventDefault(); select({type:"node", id:n.id}); }});
+});
+svg.addEventListener("click", () => select(null));
+
+// suggested toggle
+const sugg = document.getElementById("sugg");
+const applySugg = () => svg.classList.toggle("show-suggested", sugg.checked);
+sugg.addEventListener("change", applySugg); applySugg();
+
+// matrix
+const chip = id => `<button class="chip${STD[id].concept?" concept":""}" data-std="${id}" title="${STD[id].n}">${STD[id].n}</button>`;
+const table = document.getElementById("matrix");
+table.innerHTML =
+  `<colgroup><col class="layer">${COLS.map(()=>"<col>").join("")}</colgroup>` +
+  `<thead><tr><th scope="col">Layer</th>${COLS.map(c=>`<th scope="col" data-col="${c}"><button data-kind="${c}" style="--k:${kc(c)}">${KINDS[c].name}</button></th>`).join("")}</tr></thead>` +
+  `<tbody>${LAYERS.map(L=>`<tr><th scope="row">${L.name}${L.note?`<small>${L.note}</small>`:""}</th>${COLS.map(c=>{
+     const ids=L.cells[c]; return ids.length ? `<td data-col="${c}"><div class="chips">${ids.map(chip).join("")}</div></td>`
+       : `<td data-col="${c}" class="empty"><span>gap</span></td>`;}).join("")}</tr>`).join("")}
+   <tr><th scope="row">${COMPLIANCE.name}<small>ecosystem-wide</small></th><td colspan="${COLS.length}"><div class="chips">${COMPLIANCE.std.map(chip).join("")}</div></td></tr></tbody>`;
+table.addEventListener("click", ev => {
+  const c = ev.target.closest("[data-std]"); if (c) return select({type:"std", id:c.dataset.std});
+  const k = ev.target.closest("[data-kind]"); if (k) return select({type:"kind", id:k.dataset.kind});
+});
+
+/* ===================== SELECTION ===================== */
+const insp = document.getElementById("inspector");
+const tagHTML = k => `<span class="tag" style="--k:${kc(k)}">${KINDS[k].name}</span>`;
+const edgeTitle = e => `${byId[e.from].label} <span style="color:var(--muted)">→ ${e.label} →</span> ${byId[e.to].label}`;
+const relBtn = e => `<button class="rel" data-edge="${e.id}">${byId[e.from].label}${byId[e.from].sub?` <span class="muted">(${byId[e.from].sub})</span>`:""} → <b>${e.label}</b> → ${byId[e.to].label}${e.suggested?' <span class="muted">· suggested</span>':""}</button>`;
+
+function columnStandards(kind) {
+  if (kind === "eco") return `<div class="layer-line"><span>${COMPLIANCE.name}</span><div class="chips">${COMPLIANCE.std.map(chip).join("")}</div></div>`;
+  return LAYERS.map(L => `<div class="layer-line"><span>${L.name}</span>${L.cells[kind].length ? `<div class="chips">${L.cells[kind].map(chip).join("")}</div>` : `<span class="gapnote">No standard mapped</span>`}</div>`).join("");
+}
+
+function render(sel) {
+  if (!sel && profile) {
+    const P = PROFILES[profile], inP = new Set(P.std);
+    const placed = new Set();
+    const rows = LAYERS.map(L => {
+      const ids = [...new Set(COLS.flatMap(c => L.cells[c]).filter(id => inP.has(id)))]; ids.forEach(i=>placed.add(i));
+      return `<div class="layer-line"><span>${L.name}</span>${ids.length?`<div class="chips">${ids.map(chip).join("")}</div>`:`<span class="gapnote">Not covered</span>`}</div>`;
+    }).join("");
+    const comp = COMPLIANCE.std.filter(id => inP.has(id)); comp.forEach(i=>placed.add(i));
+    const rels = EDGES.filter(e => e.std.some(s => inP.has(s)) && (!e.suggested || sugg.checked));
+    insp.innerHTML = `<span class="tag" style="--k:var(--accent)">Profile · ${P.by}</span>
+      <h3>${P.name} <span class="muted" style="font-weight:400;font-size:15px">· ${P.full}</span></h3>
+      <p>${P.summary}</p>
+      <a class="link" href="${P.u}" target="_blank" rel="noopener">${P.u.replace(/^https:\/\//,"")}</a>
+      <div class="sec"><div class="sec-h">${P.std.length} standards by layer</div>${rows}
+        <div class="layer-line"><span>${COMPLIANCE.name}</span>${comp.length?`<div class="chips">${comp.map(chip).join("")}</div>`:`<span class="gapnote">Not covered</span>`}</div></div>
+      <div class="sec"><div class="sec-h">Left open</div><ul class="openlist">${P.open.map(o=>`<li>${o}</li>`).join("")}</ul></div>
+      ${rels.length?`<div class="sec"><div class="sec-h">Relationships it touches</div>${rels.map(relBtn).join("")}</div>`:""}`;
+    return;
+  }
+  if (!sel) {
+    insp.innerHTML = `<span class="tag">Inspector</span><h3>Pick anything to trace it</h3>
+      <p class="muted">Select a box or arrow in the diagram, a column heading, or a standard chip. The other views highlight what's connected.</p>
+      <div class="sec"><div class="sec-h">Start with</div>
+      ${relBtn(EDGES.find(e=>e.id==="e-accesses"))}${relBtn(EDGES.find(e=>e.id==="s-obo"))}${relBtn(EDGES.find(e=>e.id==="e-authorises"))}</div>`;
+    return;
+  }
+  if (sel.type === "node" || sel.type === "kind") {
+    const kind = sel.type === "node" ? byId[sel.id].kind : sel.id, n = sel.type === "node" ? byId[sel.id] : null;
+    const rels = n ? EDGES.filter(e => e.from===n.id || e.to===n.id) : EDGES.filter(e => byId[e.from].kind===kind || byId[e.to].kind===kind);
+    const shown = rels.filter(e => !e.suggested || sugg.checked);
+    insp.innerHTML = `${tagHTML(kind)}<h3>${n ? n.label + (n.sub?` <span class="muted" style="font-weight:400;font-size:15px">· ${n.sub}</span>`:"") : KINDS[kind].name}</h3>
+      <p>${KINDS[kind].desc}</p>
+      ${shown.length?`<div class="sec"><div class="sec-h">Relationships</div>${shown.map(relBtn).join("")}</div>`:""}
+      <div class="sec"><div class="sec-h">Standards by layer</div>${columnStandards(kind)}</div>
+      <button class="clear" data-clear>Clear selection</button>`;
+  } else if (sel.type === "edge") {
+    const e = EDGES.find(x => x.id === sel.id);
+    insp.innerHTML = `<span class="tag" style="--k:var(--accent)">${e.suggested?"Suggested relationship":"Relationship"}</span>
+      <h3>${edgeTitle(e)}</h3><p>${e.desc}</p>
+      <div class="sec"><div class="sec-h">Relevant standards</div><div class="chips">${e.std.map(chip).join("")}</div></div>
+      <div class="sec"><div class="sec-h">Endpoints</div>
+        <button class="rel" data-node="${e.from}">${tagHTML(byId[e.from].kind)} ${byId[e.from].sub||""}</button>
+        <button class="rel" data-node="${e.to}">${tagHTML(byId[e.to].kind)} ${byId[e.to].sub||""}</button></div>
+      <button class="clear" data-clear>Clear selection</button>`;
+  } else if (sel.type === "std") {
+    const s = STD[sel.id];
+    const where = [];
+    LAYERS.forEach(L => COLS.forEach(c => { if (L.cells[c].includes(sel.id)) where.push(`${KINDS[c].name} · ${L.name}`); }));
+    if (COMPLIANCE.std.includes(sel.id)) where.push(COMPLIANCE.name);
+    const rels = EDGES.filter(e => e.std.includes(sel.id) && (!e.suggested || sugg.checked));
+    insp.innerHTML = `<span class="tag" style="--k:var(--accent)">${s.concept?"Concept":"Standard"}</span><h3>${s.n}</h3><p>${s.d}</p>
+      ${s.u?`<a class="link" href="${s.u}" target="_blank" rel="noopener">${s.u.replace(/^https:\/\//,"")}</a>`:""}
+      ${where.length?`<div class="sec"><div class="sec-h">In the matrix</div>${where.map(w=>`<div class="muted">${w}</div>`).join("")}</div>`:""}
+      ${rels.length?`<div class="sec"><div class="sec-h">Used on</div>${rels.map(relBtn).join("")}</div>`:""}
+      <button class="clear" data-clear>Clear selection</button>`;
+  }
+}
+insp.addEventListener("click", ev => {
+  const t = ev.target.closest("[data-std],[data-edge],[data-node],[data-clear]"); if (!t) return;
+  if (t.dataset.std) select({type:"std", id:t.dataset.std});
+  else if (t.dataset.edge) select({type:"edge", id:t.dataset.edge});
+  else if (t.dataset.node) select({type:"node", id:t.dataset.node});
+  else select(null);
+});
+
+function highlight(sel) {
+  const hiNodes = new Set(), hiEdges = new Set(), hiStd = new Set(); let col = null;
+  if (sel) {
+    if (sel.type === "node") { const n = byId[sel.id]; hiNodes.add(n.id); col = n.kind;
+      EDGES.forEach(e => { if (e.from===n.id||e.to===n.id) { hiEdges.add(e.id); hiNodes.add(e.from); hiNodes.add(e.to); }}); }
+    if (sel.type === "kind") { col = sel.id; NODES.forEach(n => n.kind===sel.id && hiNodes.add(n.id)); }
+    if (sel.type === "edge") { const e = EDGES.find(x=>x.id===sel.id); hiEdges.add(e.id); hiNodes.add(e.from); hiNodes.add(e.to); e.std.forEach(s=>hiStd.add(s)); }
+    if (sel.type === "std") { hiStd.add(sel.id);
+      EDGES.forEach(e => { if (e.std.includes(sel.id)) { hiEdges.add(e.id); hiNodes.add(e.from); hiNodes.add(e.to); }});
+      LAYERS.forEach(L => COLS.forEach(c => { if (L.cells[c].includes(sel.id)) NODES.forEach(n => n.kind===c && hiNodes.add(n.id)); })); }
+  }
+  svg.classList.toggle("has-sel", !!sel);
+  NODES.forEach(n => { n.g.classList.toggle("is-hi", hiNodes.has(n.id)); n.g.classList.toggle("is-sel", !!sel && sel.type==="node" && sel.id===n.id); });
+  EDGES.forEach(e => { const on = hiEdges.has(e.id); e.g.classList.toggle("is-hi", on);
+    e.g.querySelector("path.vis").setAttribute("marker-end", on ? "url(#arrowHi)" : "url(#arrow)"); });
+  const inP = profile ? new Set(PROFILES[profile].std) : null;
+  svg.classList.toggle("has-prof", !!inP);
+  EDGES.forEach(e => { const on = !!inP && e.std.some(s => inP.has(s));
+    e.g.classList.toggle("is-in", on); e.g.classList.toggle("is-out", !!inP && !on); });
+  document.querySelectorAll(".chip").forEach(c => { c.classList.toggle("is-hi", hiStd.has(c.dataset.std));
+    c.classList.toggle("in-prof", !!inP && inP.has(c.dataset.std)); c.classList.toggle("is-out", !!inP && !inP.has(c.dataset.std)); });
+  table.querySelectorAll("[data-col]").forEach(c => c.classList.toggle("col-hi", c.dataset.col === col));
+}
+
+let current = null, profile = null;
+function select(sel) { current = sel; render(sel); highlight(sel); }
+document.addEventListener("keydown", ev => { if (ev.key === "Escape") select(null); });
+sugg.addEventListener("change", () => select(current));
+
+// profile switcher
+const pbar = document.getElementById("profiles");
+pbar.innerHTML = `<span class="lbl">Profile</span>` +
+  `<button class="pbtn" role="radio" data-prof="">All standards<small>${Object.keys(STD).length}</small></button>` +
+  Object.entries(PROFILES).map(([id,P]) => `<button class="pbtn" role="radio" data-prof="${id}">${P.name}<small>${P.std.length}</small></button>`).join("");
+function setProfile(id, fromHash) {
+  profile = PROFILES[id] ? id : null;
+  pbar.querySelectorAll(".pbtn").forEach(b => b.setAttribute("aria-checked", String((b.dataset.prof||null) === profile)));
+  if (!fromHash) { try { history.replaceState(null, "", profile ? "#"+profile : location.pathname + location.search); } catch(e) { location.hash = profile || ""; } }
+  select(null);
+}
+pbar.addEventListener("click", ev => { const b = ev.target.closest(".pbtn"); if (b) setProfile(b.dataset.prof); });
+window.addEventListener("hashchange", () => setProfile(location.hash.slice(1), true));
+setProfile(location.hash.slice(1), true);
+</script>
+</body>
+</html>
